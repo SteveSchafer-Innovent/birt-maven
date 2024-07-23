@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.birt.runtime';ARTIFACT_ID='org.mozilla.javascript';VERSION='1.7.5.v201504281450'"

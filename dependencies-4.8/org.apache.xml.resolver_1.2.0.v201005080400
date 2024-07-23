@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.birt.runtime.3_7_1';ARTIFACT_ID='org.apache.xml.resolver';VERSION='1.2.0'"

@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.birt.runtime';ARTIFACT_ID='org.w3c.dom.events';VERSION='3.0.0.draft20060413_v201105210656'"

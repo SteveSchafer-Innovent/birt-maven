@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.w3c.dom';ARTIFACT_ID='org.w3c.dom.smil';VERSION='1.0.1.v200903091627'"

@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.platform';ARTIFACT_ID='org.eclipse.equinox.common';VERSION='3.16.0'"

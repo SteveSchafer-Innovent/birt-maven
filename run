@@ -1,0 +1,5 @@
+#!/bin/sh
+mkdir -p dependencies
+rm dependencies/*
+cp --preserve ./dependencies-4.8/* ./dependencies
+./birt-install ~/Downloads/birt-issue-1618/birt-runtime-4.15.0 l > birt-install.log

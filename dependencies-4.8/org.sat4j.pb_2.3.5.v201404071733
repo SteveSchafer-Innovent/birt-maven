@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='com.innoventsolutions.birt.runtime';ARTIFACT_ID='org.sat4j.pb_2.3.5.v201404071733';VERSION='4.8.0'"

@@ -1,0 +1,89 @@
+#!/bin/sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+BIRTDIR="$1"
+if [ -z "$BIRTDIR" ]; then
+	echo "arg1: either the root of a BIRT repo clone that has been built or a birt-runtime zip file or directory"
+	echo "arg2: (snapshot/release/local) must be s, r, or l"
+	echo "Optional p for prompt"
+	echo "Optional t or l for trial-run or list"
+	exit 1
+fi
+if [ -d "$BIRTDIR/build/birt-packages/birt-runtime/target" ]; then
+	# pointing to a repo clone that has been built
+	REGEX="birt-runtime-([0-9]+\.[0-9]+\.[0-9]+)-[0-9]+\.zip"
+	for ZIPFILE in $(find "$BIRTDIR/build/birt-packages/birt-runtime/target/" -name "birt-runtime-*.zip"); do
+		if [[ $ZIPFILE =~ $REGEX ]]; then
+			VERSION="${BASH_REMATCH[1]}"
+		fi
+	done
+	BIRTLIB="$BIRTDIR/build/birt-packages/birt-runtime/target/package/ReportEngine/lib"
+else
+	if [ -f "$BIRTDIR" ]; then
+		# pointing to a zip file
+		rm -rf /tmp/birt-runtime
+		mkdir /tmp/birt-runtime
+		if ! unzip "$BIRTDIR" -d /tmp/birt-runtime; then
+			echo "Failed to unzip $BIRTDIR"
+			exit 1
+		fi
+		BIRTLIB=/tmp/birt-runtime/ReportEngine/lib
+	else
+		BIRTLIB="$BIRTDIR/ReportEngine/lib"
+		if [ ! -d "$BIRTLIB" ]; then
+			echo "arg1: either the root of a BIRT repo clone that has been built or a birt-runtime zip file or directory"
+			exit 1
+		fi
+	fi
+fi
+echo "BIRTLIB = $BIRTLIB"
+VERSION=""
+REGEX="org.eclipse.birt.runtime_([0-9]+\.[0-9]+\.[0-9]+)-[0-9]+\.jar"
+for JARFILE in $(find "$BIRTLIB" -name "org.eclipse.birt.runtime_*.jar");  do
+	if [[ $JARFILE =~ $REGEX ]]; then
+		VERSION="${BASH_REMATCH[1]}"
+	fi
+done
+if [ -z "$VERSION" ]; then
+	echo "Could not find birt runtime jar or could not parse version number"
+	exit 1
+fi
+echo "VERSION = $VERSION"
+if [ "$2" == "s" ]; then
+	URL="https://oss.sonatype.org/content/repositories/snapshots/"
+	VERSION="${VERSION}-SNAPSHOT"
+else
+	if [ "$2" == "r" ]; then
+		URL="https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+	else
+		if [ "$2" == "l" ]; then
+			URL=""
+		else
+			echo "arg2: (snapshot/release/local) must be s, r, or l"
+			exit 1
+		fi
+	fi
+fi
+echo "URL = $URL"
+PROMPT=""
+TRIAL_RUN=""
+OPTS="$3"
+INDEX=0
+SIZE=${#OPTS}
+while [ $INDEX -lt $SIZE ]; do
+	OPT=${OPTS:INDEX:1}
+	if [ "$OPT" == "p" ]; then
+		PROMPT="p"
+	else
+		if [ "$OPT" == "t" ]; then
+			TRIAL_RUN="t"
+		else
+			if [ "$OPT" == "l" ]; then
+				TRIAL_RUN="l"
+			fi
+		fi
+	fi
+	let INDEX=INDEX+1
+done
+echo "VERSION = $VERSION"
+find $BIRTLIB -name "*.jar" -print | sort\
+ | xargs -${PROMPT}L1 "$DIR/birt-install-file" "$VERSION" "$BIRTLIB" "$URL" "$TRIAL_RUN"

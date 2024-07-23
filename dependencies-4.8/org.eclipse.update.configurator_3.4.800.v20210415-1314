@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.platform';ARTIFACT_ID='org.eclipse.update.configurator';VERSION='3.4.800'"

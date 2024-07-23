@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.platform';ARTIFACT_ID='org.eclipse.equinox.frameworkadmin';VERSION='2.2.0'"

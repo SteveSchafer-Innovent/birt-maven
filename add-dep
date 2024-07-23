@@ -1,0 +1,38 @@
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+VERSION=$1
+POM=$2
+FILENAME=$3
+echo "add-dep $VERSION $FILENAME"
+BIRT_ARTIFACT_ID=$(./get-artifact-id $FILENAME)
+RE2='org\.eclipse\.birt\.runtime_'
+if [[ $BIRT_ARTIFACT_ID =~ $RE2 ]]; then
+	echo "    <!-- skipped $BIRT_ARTIFACT_ID -->" >> $POM
+else
+	DEPENDENCY_PROVIDER="$DIR/dependencies/$BIRT_ARTIFACT_ID"
+	if [ -f "$DEPENDENCY_PROVIDER" ]; then
+		DEPENDENCY=$($DEPENDENCY_PROVIDER)
+		echo "DEPENDENCY = $DEPENDENCY"
+		GROUP_ID=""
+		ARTIFACT_ID=""
+		VERSION=""
+		eval $DEPENDENCY
+	    if [ -n "$GROUP_ID" ] && [ -n "$ARTIFACT_ID" ] && [ -n "$VERSION" ]; then
+			echo "GROUP_ID = $GROUP_ID"
+			echo "ARTIFACT_ID = $ARTIFACT_ID"
+			echo "VERSION = $VERSION"
+		else
+			echo "DEPENDENCY is invalid"
+			GROUP_ID="org.eclipse.birt.runtime"
+			ARTIFACT_ID="$BIRT_ARTIFACT_ID"
+		fi
+	else
+		GROUP_ID="org.eclipse.birt.runtime"
+		ARTIFACT_ID="$BIRT_ARTIFACT_ID"
+	fi
+	echo "    <dependency>" >> $POM
+	echo "      <groupId>$GROUP_ID</groupId>" >> $POM
+	echo "      <artifactId>$ARTIFACT_ID</artifactId>" >> $POM
+	echo "      <version>$VERSION</version>" >> $POM
+	echo "    </dependency>" >> $POM
+fi

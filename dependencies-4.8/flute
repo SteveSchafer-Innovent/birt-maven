@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.milyn';ARTIFACT_ID='flute';VERSION='1.3'"

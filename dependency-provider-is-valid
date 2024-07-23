@@ -1,0 +1,22 @@
+#!/bin/sh
+DEPENDENCY_PROVIDER=$1
+echo "dependency-provider-is-valid $DEPENDENCY_PROVIDER"
+if [ -f "$DEPENDENCY_PROVIDER" ]; then
+	MVN_COORDINATES=$($DEPENDENCY_PROVIDER)
+	echo "  dependency-provider-is-valid MVN_COORDINATES = $MVN_COORDINATES"
+    GROUP_ID=''
+    ARTIFACT_ID=''
+    VERSION=''
+	eval $MVN_COORDINATES
+    echo "  GROUP_ID = $GROUP_ID"
+    echo "  ARTIFACT_ID = $ARTIFACT_ID"
+    echo "  VERSION = $VERSION"
+    if [ -n "$GROUP_ID" ] && [ -n "$ARTIFACT_ID" ] && [ -n "$VERSION" ]; then
+        echo "  is valid"
+        exit 0
+    fi
+else
+    echo "  file does not exist"
+fi
+echo "  not valid"
+exit 1

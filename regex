@@ -1,0 +1,2 @@
+[\t ]*<dependency>\n[\t ]*<groupId>([a-z0-9._-]+)</groupId>\n[\t ]*<artifactId>([a-z0-9._-]+)</artifactId>\n[\t ]*<version>([0-9vMR.-]+)</version>\n[\t ]*</dependency>
+echo "GROUP_ID='$1';ARTIFACT_ID='$2';VERSION='$3'"

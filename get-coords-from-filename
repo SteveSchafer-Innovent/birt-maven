@@ -1,0 +1,10 @@
+#!/bin/sh
+FILENAME="$1"
+RE='([^/]+)_(.*)\.jar'
+ARTIFACT_ID=""
+VERSION=""
+if [[ $FILENAME =~ $RE ]]; then
+	ARTIFACT_ID=${BASH_REMATCH[1]}
+    VERSION=${BASH_REMATCH[2]}
+fi
+echo "ARTIFACT_ID='$ARTIFACT_ID';VERSION='$VERSION'"

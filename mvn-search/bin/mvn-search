@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+const yargs = require('yargs');
+
+const args = yargs
+    .scriptName('mvn-search')
+    .usage('$0 [args] <query-string>', 'search for maven dependency', (yargs) => {
+        yargs.positional('query-string', {
+            describe: 'the dependency you search for',
+            type: 'string'
+        })
+    })
+    .option('required-version', {
+        alias: 'v',
+        description: 'The version to search for',
+        type: 'string',
+        default: ''
+    })
+    .option('version-ext', {
+        alias: 'x',
+        description: 'The version extension to search for',
+        type: 'string',
+        default: ''
+    })
+    .help()
+    .alias('help', 'h')
+    .argv;
+
+require = require('esm')(module /*, options*/);
+require('../src/index').search(args['query-string'], args['required-version'], args['version-ext']);

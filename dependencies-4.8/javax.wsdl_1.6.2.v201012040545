@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='commonservice.sso.tomcat.dependencypackage';ARTIFACT_ID='javax.wsdl';VERSION='1.6.2.v201012040545'"

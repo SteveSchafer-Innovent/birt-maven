@@ -1,0 +1,8 @@
+#!/bin/sh
+FILENAME="$1"
+RE='([^/]+)\.jar'
+ARTIFACT_ID=$FILENAME
+if [[ $FILENAME =~ $RE ]]; then
+	ARTIFACT_ID=${BASH_REMATCH[1]}
+fi
+echo "$ARTIFACT_ID"

@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='com.github.librepdf';ARTIFACT_ID='openpdf';VERSION='1.3.26'"

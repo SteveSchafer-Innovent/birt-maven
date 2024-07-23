@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='at.bestsolution.efxclipse.eclipse';ARTIFACT_ID='org.apache.commons.logging';VERSION='1.2.0.v20180409-1502'"

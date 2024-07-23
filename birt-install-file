@@ -1,0 +1,98 @@
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+BIRT_VERSION="$1"
+BIRTLIB="$2"
+# URL is the optional sonatype URL for publishing
+URL="$3"
+TRIAL_RUN="$4"
+# the fully qualified name of the jar file in birt-runtime ReportEngine/lib
+FILENAME="$5"
+echo "install-file $FILENAME"
+# parse the BIRT artifact ID from the file name
+BIRT_ARTIFACT_ID="$(./get-artifact-id $FILENAME)"
+echo "  BIRT_ARTIFACT_ID = $BIRT_ARTIFACT_ID"
+# DEPENDENCY_PROVIDER is a BASH script that defines the maven coordinates as environment variables
+DEPENDENCY_PROVIDER="$DIR/dependencies/$BIRT_ARTIFACT_ID"
+if [ ! -f "$DEPENDENCY_PROVIDER" ]; then
+	REGEX="([a-zA-Z0-9._-]+)_([0-9]+\.[0-9]+\.[0-9]+)(.*)"
+	MVN_COORDINATES=""
+	if [[ $BIRT_ARTIFACT_ID =~ $REGEX ]]; then
+		MVN_SEARCH="${BASH_REMATCH[1]}"
+		MVN_VERSION="${BASH_REMATCH[2]}"
+		MVN_VERSION_EXT="${BASH_REMATCH[3]}"
+		echo "find maven artifact $MVN_SEARCH $MVN_VERSION $MVN_VERSION_EXT"
+		# execute the nodeJS program to search maven central
+		MVN_COORDINATES=$(./mvn-search/bin/mvn-search "$MVN_SEARCH" --required-version "$MVN_VERSION" --version-ext "$MVN_VERSION_EXT")
+		echo "found maven artifact"
+	fi
+	if [ ! -z "$MVN_COORDINATES" ]; then
+		echo "#!/bin/sh" > "$DEPENDENCY_PROVIDER"
+		echo "$MVN_COORDINATES" >> "$DEPENDENCY_PROVIDER"
+		chmod u+x "$DEPENDENCY_PROVIDER"
+	fi
+fi
+# DEPENDENCY_PROVIDER may exist but still not define the proper environment variables
+if ./dependency-provider-is-valid "$DEPENDENCY_PROVIDER"; then
+	echo "dependency provider is valid: $BIRT_ARTIFACT_ID"
+	POM=""
+else
+	# we don't have maven coordinates so we need to register this jar file with maven central
+	MVN_COORDINATES=$(./get-coords-from-filename $FILENAME)
+	echo "MVN_COORDINATES = $MVN_COORDINATES"
+	eval $MVN_COORDINATES
+	if [ -z $ARTIFACT_ID ]; then
+		ARTIFACT_ID=$BIRT_ARTIFACT_ID
+	fi
+	$DIR/make-pom $ARTIFACT_ID $VERSION $BIRTLIB
+	POM="/tmp/${BIRT_ARTIFACT_ID}.pom"
+fi
+if [ "$TRIAL_RUN" == "t" ]; then
+	echo "POM = $POM"
+else
+	if [ "$TRIAL_RUN" != "l" ]; then
+		if [ -z "$POM" ]; then
+			echo "is external"
+		else
+			if [ -z "$URL" ]; then
+				# local nexus
+				RE2='org\.eclipse\.birt\.runtime_'
+				POMARG=''
+				if [[ $BIRT_ARTIFACT_ID =~ $RE2 ]]; then
+					echo "Using pom $POM"
+					POMARG=" -DpomFile=$POM"
+				fi
+				REPO="/home/nexus/sonatype-work/nexus/storage/m2-releases"
+				mvn install:install-file -Dfile="$FILENAME"\
+				-DgroupId=org.eclipse.birt.runtime\
+				-DartifactId=$ARTIFACT_ID\
+				-Dversion=$VERSION\
+				-Dpackaging=jar\
+				-DlocalRepositoryPath=$REPO/$POMARG
+			else
+				GPG_PASSWORD=$($DIR/gpg-password)
+				mvn -q gpg:sign-and-deploy-file\
+				-Durl=$URL\
+				-DrepositoryId=ossrh\
+				-DpomFile=$POM\
+				-Dgpg.passphrase=$GPG_PASSWORD\
+				-Dfile=$FILENAME && \
+				JAVADOC_FILENAME=$($DIR/make-jarfile $FILENAME "javadoc") && \
+				mvn -q gpg:sign-and-deploy-file\
+				-Durl=$URL\
+				-DrepositoryId=ossrh\
+				-DpomFile=$POM\
+				-Dgpg.passphrase=$GPG_PASSWORD\
+				-Dfile=$JAVADOC_FILENAME\
+				-Dclassifier=javadoc && \
+				SOURCES_FILENAME=$($DIR/make-jarfile $FILENAME "sources") && \
+				mvn -q gpg:sign-and-deploy-file\
+				-Durl=$URL\
+				-DrepositoryId=ossrh\
+				-DpomFile=$POM\
+				-Dgpg.passphrase=$GPG_PASSWORD\
+				-Dfile=$SOURCES_FILENAME\
+				-Dclassifier=sources
+			fi
+		fi
+	fi
+fi

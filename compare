@@ -1,0 +1,32 @@
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+MAVEN_JARS="$1"
+DOWNLOAD_JARS="$2"
+if [ -z "$DOWNLOAD_JARS" ]; then
+    DOWNLOAD_JARS="$MAVEN_JARS"
+fi
+echo "searching for $MAVEN_JARS.jar in ."
+for MAVEN_JAR in $(find . -name "$MAVEN_JARS.jar" -type f); do
+    echo "maven jar: $MAVEN_JAR"
+    echo "searching for $DOWNLOAD_JARS.jar in ../birt-runtime-4_9_0/ReportEngine/lib"
+    for DOWNLOAD_JAR in $(find ../birt-runtime-4_9_0/ReportEngine/lib -name "$DOWNLOAD_JARS.jar" -type f); do
+        echo "download jar: $DOWNLOAD_JAR"
+        MAVEN_FILES_PATH="/tmp/maven/$(basename $MAVEN_JAR)"
+        DOWNLOAD_FILES_PATH="/tmp/download/$(basename $DOWNLOAD_JAR)"
+        rm -rf "$DOWNLOAD_FILES_PATH"
+        mkdir -p "$DOWNLOAD_FILES_PATH"
+        unzip -qq "$DOWNLOAD_JAR" -d "$DOWNLOAD_FILES_PATH"
+        DOWNLOAD_MANIFEST="$DOWNLOAD_FILES_PATH/META-INF/MANIFEST.MF"
+        if [ -f "$DOWNLOAD_MANIFEST" ]; then
+            cat "$DOWNLOAD_MANIFEST" | sort > "$DOWNLOAD_MANIFEST.sorted"
+        fi
+        rm -rf "$MAVEN_FILES_PATH"
+        mkdir -p "$MAVEN_FILES_PATH"
+        unzip -qq "$MAVEN_JAR" -d "$MAVEN_FILES_PATH"
+        MAVEN_MANIFEST="$MAVEN_FILES_PATH/META-INF/MANIFEST.MF"
+        if [ -f "$MAVEN_MANIFEST" ]; then
+            cat "$MAVEN_MANIFEST" | sort > "$MAVEN_MANIFEST.sorted"
+        fi
+        meld "$DOWNLOAD_FILES_PATH" "$MAVEN_FILES_PATH"
+    done
+done

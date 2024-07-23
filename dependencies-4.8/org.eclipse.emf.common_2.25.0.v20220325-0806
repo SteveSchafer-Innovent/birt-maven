@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.emf';ARTIFACT_ID='org.eclipse.emf.common';VERSION='2.25.0'"

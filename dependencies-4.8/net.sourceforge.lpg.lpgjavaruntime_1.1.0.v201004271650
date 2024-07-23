@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse.birt.runtime';ARTIFACT_ID='net.sourceforge.lpg.lpgjavaruntime';VERSION='1.1.0.v201004271650'"

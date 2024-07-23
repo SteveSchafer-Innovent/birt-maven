@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "GROUP_ID='org.eclipse';ARTIFACT_ID='org.sat4j.core';VERSION='2.3.5.v201308161310'"
